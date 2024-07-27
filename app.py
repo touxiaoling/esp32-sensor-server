@@ -26,7 +26,7 @@ class SensorPrometheus:
         self.co2 = Gauge("sensor_co2", "sensor co2")
         self.tvoc = Gauge("sensor_tvoc", "sensor tvoc")
         self.light = Gauge("sensor_light", "sensor light")
-        self.time_stamp = Gauge("time_stamp", "sensor get time stamp")
+        self.time_stamp = Gauge("sensor_time_stamp", "sensor get time stamp")
 
     def update(self, sensor_info: SensorInfo):
         self.temp.set(sensor_info.temp)
