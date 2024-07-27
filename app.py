@@ -18,6 +18,7 @@ class SensorInfo(BaseModel):
     light: float  # 光强
     time_stamp: int  # 时间戳
 
+
 class SensorPrometheus:
     def __init__(self):
         self.temp = Gauge("sensor_temp", "sensor temp")
@@ -35,13 +36,20 @@ class SensorPrometheus:
         self.light.set(sensor_info.light)
         self.time_stamp.set(sensor_info.time_stamp)
 
+
 sensor_prometheus = SensorPrometheus()
+
 
 @app.post("/sensor_info")
 async def post_sensor_info(sensor_info: SensorInfo):
     _logger.info(f"sensor_info: {sensor_info}")
     sensor_prometheus.update(sensor_info)
     return {"msg": "ok"}
+
+
+@app.get("/")
+async def 链接测试():
+    return {"status": "ok", "info": "Hello,World"}
 
 
 def make_metrics_app():
