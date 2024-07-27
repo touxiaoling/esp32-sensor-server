@@ -1,0 +1,14 @@
+version: "3.9"
+services:
+  esp32sersorserver:
+    build:
+      context: ./
+    environment:
+      - TZ=Asia/Shanghai
+      - PROMETHEUS_MULTIPROC_DIR=/code/prometheus_metrics
+      - WEB_CONCURRENCY=${WEB_CONCURRENCY}
+    restart: unless-stopped
+    logging:
+      driver: local
+      options:
+        max-size: 50m

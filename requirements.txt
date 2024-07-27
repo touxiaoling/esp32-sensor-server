@@ -1,0 +1,10 @@
+setuptools
+deprecation
+retry
+httpx[http2]
+fastapi
+uvloop
+websockets
+uvicorn[standard]
+prometheus-client
+python-dotenv
