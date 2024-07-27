@@ -47,11 +47,13 @@ async def post_sensor_info(sensor_info: SensorInfo):
     return {"msg": "ok"}
 
 
-@app.get("/tvoc_info")
-async def sensor_info():   
-    tvoc =sensor_prometheus.tvoc._value.get()
+@app.get("/tvoc_co2_info")
+async def sensor_info():
+    tvoc = sensor_prometheus.tvoc._value.get()
+    co2 = sensor_prometheus.co2._value.get()
     time_stamp = sensor_prometheus.time_stamp._value.get()
-    return {"tvoc": tvoc,"time_stamp":time_stamp}
+    return {"tvoc": tvoc, "co2": co2, "time_stamp": time_stamp}
+
 
 @app.get("/")
 async def 链接测试():
