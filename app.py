@@ -1,58 +1,40 @@
 import logging
-from pydantic import BaseModel
 
 from fastapi import FastAPI
 from prometheus_client import multiprocess, make_asgi_app, CollectorRegistry, Gauge
 
-app = FastAPI(title="esp32-sensor-server", version="0.0.1")
+app = FastAPI(title="esp32-sensor-server", version="0.0.2")
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s")
 _logger = logging.getLogger(__name__)
 
 
-class SensorInfo(BaseModel):
-    temp: float  # 温度
-    humi: float  # 相对湿度
-    co2: float  # 二氧化碳含量
-    tvoc: float  # tvoc含量
-    light: float  # 光强
-    time_stamp: int  # 时间戳
-
-
 class SensorPrometheus:
     def __init__(self):
-        self.temp = Gauge("sensor_temp", "sensor temp")
-        self.humi = Gauge("sensor_humi", "sensor humi")
-        self.co2 = Gauge("sensor_co2", "sensor co2")
-        self.tvoc = Gauge("sensor_tvoc", "sensor tvoc")
-        self.light = Gauge("sensor_light", "sensor light")
-        self.time_stamp = Gauge("sensor_time_stamp", "sensor get time stamp")
+        self.promethetus_dict: dict[str, Gauge] = {}
 
-    def update(self, sensor_info: SensorInfo):
-        self.temp.set(sensor_info.temp)
-        self.humi.set(sensor_info.humi)
-        self.co2.set(sensor_info.co2)
-        self.tvoc.set(sensor_info.tvoc)
-        self.light.set(sensor_info.light)
-        self.time_stamp.set(sensor_info.time_stamp)
+    def update(self, sensor_info: dict[str, int | float]):
+        for k, v in sensor_info.items():
+            if k not in self.promethetus_dict:
+                self.promethetus_dict[k] = Gauge(f"sensor_{k}", f"sensor {k}")
+
+            self.promethetus_dict[k].set(v)
 
 
 sensor_prometheus = SensorPrometheus()
 
 
 @app.post("/sensor_info")
-async def post_sensor_info(sensor_info: SensorInfo):
+async def post_sensor_info(sensor_info: dict[str, int | float]):
     _logger.info(f"sensor_info: {sensor_info}")
     sensor_prometheus.update(sensor_info)
     return {"msg": "ok"}
 
 
-@app.get("/tvoc_co2_info")
+@app.get("/all_sensor_info")
 async def sensor_info():
-    tvoc = sensor_prometheus.tvoc._value.get()
-    co2 = sensor_prometheus.co2._value.get()
-    time_stamp = sensor_prometheus.time_stamp._value.get()
-    return {"tvoc": tvoc, "co2": co2, "time_stamp": time_stamp}
+    res = {k: v._value.get() for k, v in sensor_prometheus.promethetus_dict.items()}
+    return res
 
 
 @app.get("/")
